@@ -44,3 +44,4 @@ pnpm tauri build
 ## License
 
 Distribuito sotto licenza [Apache-2.0](LICENSE).
+
