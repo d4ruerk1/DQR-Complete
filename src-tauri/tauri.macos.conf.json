@@ -1,0 +1,8 @@
+{
+  "bundle": {
+    "resources": {
+      "resources/src-darwin": "data/src-darwin",
+      "resources/catalog.json": "resources/catalog.json"
+    }
+  }
+}

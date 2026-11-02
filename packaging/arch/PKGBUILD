@@ -1,0 +1,99 @@
+# Maintainer: Dav (d4ruerk1) <d4ruerk1@users.noreply.github.com>
+#
+# Arch Linux / CachyOS package for DRQ Complete.
+# Build:   makepkg -si
+# Local checkout build (no release tag needed):  ./build-local.sh
+
+_ghuser=d4ruerk1
+_repo=DQR-Complete
+pkgname=drq-complete
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Standalone desktop tool for Discord Quests and Rich Presence simulation"
+arch=('x86_64' 'aarch64')
+url="https://github.com/${_ghuser}/${_repo}"
+provides=('discord-quest-completer' 'dqc-linux')
+conflicts=('discord-quest-completer')
+license=('Apache-2.0')
+depends=(
+  'webkit2gtk-4.1'
+  'gtk3'
+  'libsoup3'
+  'glib2'
+  'cairo'
+  'pango'
+  'gdk-pixbuf2'
+  'openssl'
+  'hicolor-icon-theme'
+  'gcc-libs'
+  'glibc'
+)
+makedepends=('rust' 'nodejs' 'npm' 'git')
+optdepends=(
+  'discord: native Discord client (game detection needs the native, non-Flatpak client)'
+  'xdg-utils: open links from the app'
+)
+# LTO from makepkg.conf (enabled by default on CachyOS) breaks some Rust/C
+# mixed crates; Rust already uses its own LTO in the release profile.
+options=('!lto' '!debug')
+# GitHub strips the leading "v" from the tag: archive v1.0.0 -> DQR-Complete-1.0.0/
+# build-local.sh creates this same file/dir layout from the local checkout.
+# The local file is named *-src.tar.gz so a source archive can never be
+# mistaken for an installable binary package (*.pkg.tar.zst).
+source=("${pkgname}-${pkgver}-src.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz")
+_srcname="${_repo}-${pkgver}"
+sha256sums=('SKIP')   # replace with the real checksum: updpkgsums
+
+_pnpm() { npx --yes pnpm@8.15.3 "$@"; }   # pinned to upstream's packageManager
+
+prepare() {
+  cd "${_srcname}"
+  export CARGO_HOME="${srcdir}/cargo-home"
+  _pnpm install --frozen-lockfile || _pnpm install
+  cargo fetch --manifest-path src-tauri/Cargo.toml
+  cargo fetch --manifest-path src-linux/Cargo.toml
+}
+
+build() {
+  cd "${_srcname}"
+  export CARGO_HOME="${srcdir}/cargo-home"
+  export CARGO_TARGET_DIR="${PWD}/target"
+
+  # 1) tiny dummy game runner (freestanding static ELF, ~1-2 KB)
+  cargo build --release --manifest-path src-linux/Cargo.toml
+  install -Dm755 target/release/src-linux src-tauri/resources/src-linux
+
+  # 2) Tauri app (frontend is built by beforeBuildCommand)
+  _pnpm tauri build --no-bundle
+}
+
+package() {
+  cd "${_srcname}"
+
+  install -Dm755 target/release/drq-complete \
+    "${pkgdir}/usr/bin/drq-complete"
+  install -Dm755 target/release/src-linux \
+    "${pkgdir}/usr/lib/drq-complete/src-linux"
+  install -Dm644 src-tauri/resources/catalog.json \
+    "${pkgdir}/usr/lib/drq-complete/resources/catalog.json"
+
+  install -Dm644 packaging/linux/drq-complete.desktop \
+    "${pkgdir}/usr/share/applications/drq-complete.desktop"
+  install -Dm644 src-tauri/icons/32x32.png \
+    "${pkgdir}/usr/share/icons/hicolor/32x32/apps/drq-complete.png"
+  install -Dm644 src-tauri/icons/128x128.png \
+    "${pkgdir}/usr/share/icons/hicolor/128x128/apps/drq-complete.png"
+  # icon.png (same content as 128x128@2x.png) is 256x256; install it under
+  # the matching hicolor size so KDE picks the correct entry.
+  install -Dm644 src-tauri/icons/icon.png \
+    "${pkgdir}/usr/share/icons/hicolor/256x256/apps/drq-complete.png"
+
+  # Apache-2.0: license and attribution notices must ship with every copy
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  install -Dm644 NOTICE "${pkgdir}/usr/share/licenses/${pkgname}/NOTICE"
+  install -Dm644 README.md "${pkgdir}/usr/share/doc/${pkgname}/README.md"
+  install -Dm644 CREDITS.md "${pkgdir}/usr/share/doc/${pkgname}/CREDITS.md"
+  install -Dm644 PRIVACY.md "${pkgdir}/usr/share/doc/${pkgname}/PRIVACY.md"
+  install -Dm644 GOVERNANCE.md "${pkgdir}/usr/share/doc/${pkgname}/GOVERNANCE.md"
+  install -Dm644 SECURITY.md "${pkgdir}/usr/share/doc/${pkgname}/SECURITY.md"
+}

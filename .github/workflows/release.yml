@@ -1,0 +1,232 @@
+name: Release
+
+# Publishes prebuilt packages alongside the source archive when a v* tag is
+# pushed: Arch package (.pkg.tar.zst), AppImage, Flatpak bundle, Windows installer
+# (.exe) and macOS bundle (.dmg).
+# All artifacts and the updater manifest (latest.json) are published directly
+# without asymmetric key or minisign signature requirements.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  appimage:
+    name: AppImage (Linux x86_64)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Tauri Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev \
+            libayatana-appindicator3-dev librsvg2-dev patchelf file
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile || pnpm install
+
+      - name: Build dummy game runner
+        run: |
+          cargo build --release --manifest-path src-linux/Cargo.toml
+          install -Dm755 src-linux/target/release/src-linux src-tauri/resources/src-linux
+
+      - name: Build AppImage
+        run: pnpm tauri build --bundles appimage
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: appimage
+          path: src-tauri/target/release/bundle/appimage/*.AppImage
+          if-no-files-found: error
+
+  arch:
+    name: Arch package (.pkg.tar.zst)
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - name: Install base tooling
+        run: pacman -Syu --noconfirm --needed git sudo
+
+      - uses: actions/checkout@v4
+
+      - name: Build package with makepkg
+        run: |
+          useradd -m builder
+          echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
+          chown -R builder:builder "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE"
+          sudo -u builder HOME=/home/builder packaging/arch/build-local.sh -s --noconfirm
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arch-package
+          path: packaging/arch/*.pkg.tar.zst
+          if-no-files-found: error
+
+  flatpak:
+    name: Flatpak bundle
+    runs-on: ubuntu-latest
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:gnome-46
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Flatpak
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: packaging/flatpak/io.github.d4ruerk1.DRQComplete.yml
+          bundle: drq-complete.flatpak
+          cache: 'true'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flatpak
+          path: drq-complete.flatpak
+          if-no-files-found: error
+
+  windows:
+    name: Windows (x86_64)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile || pnpm install
+
+      - name: Build Windows runner
+        run: |
+          cargo build --release --manifest-path src-win/Cargo.toml
+          mkdir -Force src-tauri/resources
+          copy src-win/target/release/src-win.exe src-tauri/resources/src-win.exe
+
+      - name: Build Windows installer
+        run: pnpm tauri build --bundles nsis
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: error
+
+  macos:
+    name: macOS (Universal / x86_64)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile || pnpm install
+
+      - name: Build macOS runner
+        run: |
+          cargo build --release --manifest-path src-darwin/Cargo.toml
+          mkdir -p src-tauri/resources
+          cp src-darwin/target/release/src-darwin src-tauri/resources/src-darwin
+
+      - name: Build macOS bundle
+        run: pnpm tauri build --bundles dmg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-bundle
+          path: src-tauri/target/release/bundle/dmg/*.dmg
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub release
+    needs: [appimage, arch, flatpak, windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          mkdir -p release
+
+          # Prebuilt, installable packages for all platforms
+          cp artifacts/appimage/*.AppImage "release/DRQ-Complete-${version}-x86_64.AppImage"
+          cp artifacts/arch-package/*.pkg.tar.zst release/
+          cp artifacts/flatpak/drq-complete.flatpak "release/drq-complete-${version}-x86_64.flatpak"
+          cp artifacts/windows-installer/*.exe "release/DRQ-Complete-${version}-setup.exe"
+          cp artifacts/macos-bundle/*.dmg "release/DRQ-Complete-${version}.dmg"
+
+          # Direct updater manifest (no signature keys required)
+          node scripts/generate-updater-manifest.mjs \
+            --version "${version}" --dir release
+
+          # Compressed source code archive
+          git archive --format=tar.gz --prefix="DQR-Complete-${version}/" \
+            -o "release/drq-complete-${version}-source.tar.gz" HEAD
+
+          ls -lh release/
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body: |
+            ## Downloads & Cross-Platform Packages (v1.0.0)
+
+            | File | Platform | Description |
+            | --- | --- | --- |
+            | `DRQ-Complete-*-setup.exe` | Windows 11 / 10 | Standalone installer for Windows (NSIS) |
+            | `DRQ-Complete-*-x86_64.AppImage` | Linux | Portable prebuilt AppImage for any distribution |
+            | `*.pkg.tar.zst` | Linux (Arch / CachyOS) | Pacman native package (`sudo pacman -U <file>`) |
+            | `drq-complete-*-x86_64.flatpak` | Linux (Flatpak) | Flatpak single-bundle (`flatpak install <file>`) |
+            | `DRQ-Complete-*.dmg` | macOS | Apple disk image installer |
+            | `latest.json` | Cross-platform | Direct auto-update manifest for in-app checks |
+            | `*-source.tar.gz` | Source | Clean compressed source tree |
+
+            In-app auto-update directly checks GitHub releases and updates without asymmetric cryptographic key constraints.
+          files: release/*

@@ -1,0 +1,8 @@
+{
+  "bundle": {
+    "resources": {
+      "resources/src-win.exe": "data/src-win.exe",
+      "resources/catalog.json": "resources/catalog.json"
+    }
+  }
+}

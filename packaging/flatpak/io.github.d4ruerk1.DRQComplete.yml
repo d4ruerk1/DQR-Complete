@@ -1,0 +1,47 @@
+app-id: io.github.d4ruerk1.DRQComplete
+runtime: org.gnome.Platform
+runtime-version: '46'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.node20
+command: drq-complete
+finish-args:
+  - --share=network
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  - --filesystem=home
+  - --talk-name=org.freedesktop.secrets
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node20/bin
+  env:
+    CARGO_HOME: /run/build/drq-complete/cargo
+    npm_config_nodedir: /usr/lib/sdk/node20
+modules:
+  - name: drq-complete
+    buildsystem: simple
+    build-commands:
+      - npm install -g pnpm@8.15.3
+      - pnpm install --frozen-lockfile || pnpm install
+      # Dummy game runner: it must exist before `tauri build` because it is
+      # bundled via the "resources/*" glob in tauri.conf.json.
+      - cargo build --release --manifest-path src-linux/Cargo.toml
+      - install -Dm755 src-linux/target/release/src-linux src-tauri/resources/src-linux
+      # Frontend is built by beforeBuildCommand; --no-bundle avoids needing
+      # dpkg/rpm tooling inside the flatpak build environment.
+      - pnpm tauri build --no-bundle
+      - install -Dm755 src-tauri/target/release/drq-complete /app/bin/drq-complete
+      # The backend looks for the runner and catalog at <exe_dir>/resources/ too.
+      - install -Dm755 src-linux/target/release/src-linux /app/bin/resources/src-linux
+      - install -Dm644 src-tauri/resources/catalog.json /app/bin/resources/catalog.json
+      # Flatpak requires the icon/desktop name to match the app-id
+      - sed -i 's/^Icon=.*/Icon=io.github.d4ruerk1.DRQComplete/' packaging/linux/drq-complete.desktop
+      - install -Dm644 packaging/linux/drq-complete.desktop /app/share/applications/io.github.d4ruerk1.DRQComplete.desktop
+      - install -Dm644 src-tauri/icons/128x128.png /app/share/icons/hicolor/128x128/apps/io.github.d4ruerk1.DRQComplete.png
+      - install -Dm644 src-tauri/icons/64x64.png /app/share/icons/hicolor/64x64/apps/io.github.d4ruerk1.DRQComplete.png
+      - install -Dm644 src-tauri/icons/32x32.png /app/share/icons/hicolor/32x32/apps/io.github.d4ruerk1.DRQComplete.png
+    sources:
+      - type: dir
+        path: ../../

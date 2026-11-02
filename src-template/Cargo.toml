@@ -1,0 +1,13 @@
+[package]
+name = "drq-runner-template"
+version = "1.0.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Template runner for DRQ Complete"
+
+[dependencies]
+eframe = "0.31.1"
+
+[[bin]]
+name = "drq-runner-template"
+path = "src/main.rs"

@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+/*
+ * DRQ Complete — design tokens & shared component classes (v1.0.0 UI redesign)
+ * Tailwind CSS v4 is imported above; everything below layers on top of it.
+ */
+
+@theme {
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Slim, theme-aware scrollbars for panels and dropdowns */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(156 163 175 / 0.5) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: rgb(156 163 175 / 0.5);
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@layer components {
+  /* Buttons — one shared base, semantic variants */
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 dark:focus-visible:ring-offset-gray-900;
+  }
+  .btn-primary {
+    @apply bg-indigo-600 text-white hover:bg-indigo-500 active:bg-indigo-700;
+  }
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-500 active:bg-red-700;
+  }
+  .btn-ghost {
+    @apply bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600;
+  }
+  .btn-sm {
+    @apply px-2 py-1 text-xs;
+  }
+
+  /* Form controls */
+  .input {
+    @apply w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-gray-100 placeholder-gray-500 transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100;
+    background-color: #111827 !important;
+    color: #f3f4f6 !important;
+    border-color: #374151 !important;
+    color-scheme: dark;
+  }
+  select.input, select {
+    background-color: #111827 !important;
+    color: #f3f4f6 !important;
+    border-color: #374151 !important;
+    color-scheme: dark;
+  }
+  select option {
+    background-color: #111827 !important;
+    color: #f3f4f6 !important;
+  }
+  .input-sm {
+    @apply rounded-md px-2 py-1.5;
+  }
+  .input-label {
+    @apply mb-1 block text-sm text-gray-700 dark:text-gray-300;
+  }
+
+  /* Surfaces */
+  .card {
+    @apply rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900;
+  }
+  .card-pad {
+    @apply p-4 sm:p-6;
+  }
+  .section-title {
+    @apply text-lg font-semibold text-gray-900 sm:text-xl dark:text-white;
+  }
+  .section-desc {
+    @apply text-sm text-gray-500 dark:text-gray-400;
+  }
+}

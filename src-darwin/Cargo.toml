@@ -1,0 +1,13 @@
+[package]
+name = "src-darwin"
+version = "1.0.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "macOS dummy game runner for DRQ Complete"
+
+[[bin]]
+name = "src-darwin"
+path = "src/main.rs"
+
+[dependencies]
+winit = "0.30"

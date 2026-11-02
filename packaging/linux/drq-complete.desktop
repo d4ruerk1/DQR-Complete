@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=DRQ Complete
+Comment=DRQ Complete - Discord Rich Presence & Activity Manager
+Exec=drq-complete
+Icon=drq-complete
+Type=Application
+Categories=Utility;Network;
+StartupWMClass=drq-complete

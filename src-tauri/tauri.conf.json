@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "DRQ Complete",
+  "version": "1.0.0",
+  "identifier": "io.github.d4ruerk1.drqcomplete",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "DRQ Complete",
+        "decorations": false,
+        "width": 800,
+        "height": 600,
+        "minWidth": 540,
+        "minHeight": 480,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "assetProtocol": {
+        "enable": true,
+        "scope": []
+      },
+      "csp": {
+        "default-src": "'self' customprotocol: asset:",
+        "connect-src": "ipc: http://ipc.localhost https://github.com https://raw.githubusercontent.com https://api.github.com https://objects.githubusercontent.com https://discord.com https://*.discord.com https://cdn.discordapp.com",
+        "img-src": "'self' asset: http://asset.localhost blob: data: https://raw.githubusercontent.com https://github.com https://cdn.discordapp.com https://*.discord.com",
+        "style-src": "'unsafe-inline' 'self'"
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": [
+      "resources/*"
+    ]
+  }
+}

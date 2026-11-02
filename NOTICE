@@ -1,0 +1,88 @@
+DRQ Complete
+Copyright (c) 2026 Dav (d4ruerk1)
+
+This product is licensed under the Apache License, Version 2.0 (the
+"License"); you may not use this software except in compliance with the
+License. You may obtain a copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations
+under the License.
+
+========================================================================
+Attribution notice (required preservation)
+========================================================================
+
+DRQ Complete is a derivative work of "Discord Quest Completer",
+Copyright (c) 2025 Mark Terence Tiglao, originally distributed under the
+MIT License. In compliance with that license, the original copyright
+notice and permission notice are preserved below and must be retained in
+every copy or substantial portion of the software:
+
+    MIT License
+
+    Copyright (c) 2025 Mark Terence Tiglao
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the
+    "Software"), to deal in the Software without restriction, including
+    without limitation the rights to use, copy, modify, merge, publish,
+    distribute, sublicense, and/or sell copies of the Software, and to
+    permit persons to whom the Software is furnished to do so, subject to
+    the following conditions:
+
+    The above copyright notice and this permission notice shall be
+    included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Portions of this software remain covered by the MIT License above; all
+new and modified portions introduced by this project are distributed
+under the Apache License, Version 2.0.
+
+========================================================================
+Trademarks
+========================================================================
+
+"Discord" is a trademark of Discord Inc. It is used only to describe what
+this software interoperates with. This project is not affiliated with,
+endorsed by, or sponsored by Discord Inc. Game names and identifiers
+shown in the app come from Discord's public "detectable applications"
+list and belong to their respective owners.
+
+========================================================================
+No warranty / use at your own risk
+========================================================================
+
+The software is provided "AS IS", without warranty of any kind (see
+LICENSE). Using it may be against Discord's Terms of Service or Quest
+rules and could lead to lost rewards or account actions. You are
+responsible for how you use it.
+
+========================================================================
+Privacy
+========================================================================
+
+The app does not collect or send personal data to the authors. It only
+downloads the public list of Discord-detectable games and talks to the
+local Discord client through its local RPC socket.
+
+========================================================================
+Third-party components
+========================================================================
+
+The application is built with open-source components distributed under
+their own licenses (mostly MIT and/or Apache-2.0), including Tauri, Vue,
+Vite, Tailwind CSS, discord-sdk (Embark Studios), Tokio, Serde, reqwest.
+A complete list can be generated with `cargo about` / `cargo license`
+(Rust) and `pnpm licenses list` (JavaScript).

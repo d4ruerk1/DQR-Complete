@@ -1,0 +1,29 @@
+[package]
+name = "src-linux"
+version = "1.0.0"
+edition = "2021"
+description = "Minimal (<10 KB) Linux dummy game runner for DRQ Complete"
+license = "Apache-2.0"
+authors = ["Dav (d4ruerk1)"]
+
+# No dependencies on purpose: the runner is a freestanding, static ELF
+# (no libc, no std) that only uses raw Linux syscalls.
+[dependencies]
+
+[[bin]]
+name = "src-linux"
+path = "src/main.rs"
+test = false
+bench = false
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+debug = false
+overflow-checks = false
