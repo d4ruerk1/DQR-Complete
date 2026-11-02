@@ -12,3 +12,5 @@ preserved in [NOTICE](NOTICE), as required.
 ## Built with
 [Tauri](https://tauri.app), [Vue](https://vuejs.org), [Vite](https://vitejs.dev), [Tailwind CSS](https://tailwindcss.com),
 [discord-sdk](https://github.com/EmbarkStudios/discord-sdk) by Embark Studios, and the Rust and JavaScript ecosystems.
+
+- Claude
