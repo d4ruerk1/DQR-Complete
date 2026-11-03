@@ -16,6 +16,7 @@
     "build:runner:darwin": "cargo build --release --manifest-path src-darwin/Cargo.toml",
     "copy:runner:darwin": "node -e \"const fs=require('fs'); fs.mkdirSync('src-tauri/resources', {recursive:true}); fs.copyFileSync('src-darwin/target/release/src-darwin', 'src-tauri/resources/src-darwin')\"",
     "sync:runner": "node scripts/sync-runner.mjs",
+    "build:appimage": "bash scripts/build-appimage.sh",
     "tauri:dev": "tauri dev"
   },
   "dependencies": {
